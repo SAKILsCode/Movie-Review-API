@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: testuser
+      MONGO_INITDB_ROOT_PASSWORD: testpassword
+      AUTH: admin
+    ports:
+      - '27017:27017'
+    volumes:
+      - 'movie_api_docker_mongodb_data:/data/db'
+
+  # Mongo Express service
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: testuser
+      ME_CONFIG_MONGODB_ADMINPASSWORD: testpassword
+      ME_CONFIG_MONGODB_SERVER: mongodb
+    ports:
+      - '8085:8085'
+    depends_on:
+      - mongodb
+
+# Confirms data persistance locally
+volumes:
+  movie_api_docker_mongodb_data:
+    driver: local
