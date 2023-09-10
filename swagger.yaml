@@ -1,0 +1,1150 @@
+openapi: 3.0.0
+
+info:
+  title: Movie Review API
+  version: 1.0.0
+  description: Movie Review API is a platform for movie enthusiasts to share their opinions and insights about movies through reviews and ratings and to discover a variety of good movies.
+  contact:
+    name: MD Sakil Hasan
+    url: https://github.com/SAKILsCode
+    email: sakil@gmail.com
+
+servers:
+  - url: https://localhost:4000/api/v1
+    description: Dev Server
+
+tags:
+  - name: Auth
+    description: Authentication endpoints (Public)
+  - name: Profile
+    description: Profile endpoints (Private)
+  - name: User
+    description: User endpoints (Public + Private - admin only)
+  - name: Movie
+    description: Movie endpoints (Public + Private)
+  - name: Review
+    description: Review endpoints (Public + Private)
+
+paths:
+  # Auth - Public
+  "/auth/signup":
+    post:
+      description: Create a new account
+      tags: [Auth]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: MD Sakil Hasan
+                email:
+                  type: string
+                  format: email
+                  example: MD Sakil Hasan
+                password:
+                  type: string
+                  format: password
+                  example: dummypassword123
+              required: [name, email, password]
+      responses:
+        '201':
+          description: Signup successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Signup successful
+                  data:
+                    $ref: '#/components/schemas/AuthData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: /auth/signup
+                      login:
+                        type: string
+                        example: /auth/login
+        '400':
+          $ref: '#/components/responses/400'
+        '409':
+          $ref: '#/components/responses/409'
+        '500':
+          $ref: '#/components/responses/500'
+     
+  "/auth/login":
+   post:
+      description: Login to an account
+      tags: [Auth]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: MD Sakil Hasan
+                password:
+                  type: string
+                  format: password
+                  example: dummypassword123
+              required: [email, password]
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Signin successful
+                  data:
+                    allOf:
+                      - $ref: '#/components/schemas/AuthData'
+                      - type: object
+                        properties:
+                          access_token:
+                            type: string
+                            example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                    
+                    
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: /auth/login
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: '#/components/responses/500'
+
+  # Profile - Private
+  "/profile":
+    patch:
+      security:
+        - bearerAuth: []
+      description: Update Profile
+      tags: [Profile]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: MD Sakil Hasan
+                email:
+                  type: string
+                  format: email
+                  example: MD Sakil Hasan
+                password:
+                  type: string
+                  format: password
+                  example: dummypassword123
+              required: [name, email, password]
+      responses:
+        '200':
+          description: Successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Signin successful
+                  data:
+                    $ref: '#/components/schemas/UserData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: /profile
+                      user_movies:
+                        type: string
+                        example: /users/{id}/movies
+                      user_reviews:
+                        type: string
+                        example: /users/{id}/reviews
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      security:
+        - bearerAuth: []
+      description: Delete Profile
+      tags: [Profile]
+      responses:
+        '204':
+          description: Successfully deleted
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '500':
+          $ref: '#/components/responses/500'
+
+  # User - Public + Private (admin only)
+  "/users":
+    get:
+      description: Get all existing users
+      tags: [User]
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/sortTypeParam'
+        - $ref: '#/components/parameters/sortByParam'
+        - $ref: '#/components/parameters/searchParam'
+      responses:
+        '200':
+          description: Successfully retrieved users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/users?page=2&limit=10"
+                      next_page:
+                        type: string
+                        format: url
+                        example: "/users?page=3&limit=10"
+                      prev_page:
+                        type: string
+                        format: url
+                        example: "/users?page=1&limit=10"
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      security:
+        - bearerAuth: []
+      description: Create a user
+      tags: [User]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserReqData'
+      responses:
+        '201':
+          description: User created Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: /users
+                      user:
+                        type: string
+                        format: url
+                        example: /users/{id}
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+
+  "/users/{id}":
+    get:
+      description: Get a single user
+      tags: [User]
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '200':
+          description: User retrieved Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: /users/{id}
+                      user_movies:
+                        type: string
+                        format: url
+                        example: /users/{id}/movies
+                      user_reviews:
+                        type: string
+                        format: url
+                        example: /users/{id}/reviews
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    patch:
+      security:
+        - bearerAuth: []
+      description: Update a single user
+      tags: [User]
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserReqData'
+      responses:
+        '200':
+          description: User updated Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/UserData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: /users
+                      user_movies:
+                        type: string
+                        format: url
+                        example: /users/{id}/movies
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      security:
+        - bearerAuth: []
+      description: Delete a user
+      tags: [User]
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '204':
+          description: Deleted Successfully
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+  # Movie - Public + Private
+  "/users/{baseId}/movies":
+    get:
+      description: Get all movies of a user
+      tags: [Movie]
+      parameters:
+        - $ref: '#/components/parameters/baseIdPathParam'
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/sortTypeParam'
+        - $ref: '#/components/parameters/sortByParam'
+        - $ref: '#/components/parameters/searchParam'
+      responses:
+        '200':
+          description: Movies retrieved Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MovieData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/users/{baseId}/movies?page=2&limit=10"
+                      next_page:
+                        type: string
+                        format: url
+                        example: "/users/{baseId}/movies?page=3&limit=10"
+                      prev_page:
+                        type: string
+                        format: url
+                        example: "/users/{baseId}/movies?page=1&limit=10"  
+        '500':
+          $ref: '#/components/responses/500'
+  
+  "/movies":
+    get:
+      description: Get all movies
+      tags: [Movie]
+      parameters:
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/sortTypeParam'
+        - $ref: '#/components/parameters/sortByParam'
+        - $ref: '#/components/parameters/searchParam'
+      responses:
+        '200':
+          description: Movies retrieved Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MovieData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/movies?page=2&limit=10"
+                      next_page:
+                        type: string
+                        format: url
+                        example: "/movies?page=3&limit=10"
+                      prev_page:
+                        type: string
+                        format: url
+                        example: "/movies?page=1&limit=10" 
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      security:
+        - bearerAuth: []
+      description: Create a user
+      tags: [Movie]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieReqData'
+      responses:
+        '201':
+          description: Movie created Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/MovieData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: /movies
+                      movie:
+                        type: string
+                        example: /movies/{id}
+        '400':
+          $ref: '#/components/responses/400'        
+        '500':
+          $ref: '#/components/responses/500'        
+
+  "/movies/{id}":
+    get:
+      description: Get a single movie
+      tags: [Movie]
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '200':
+          description: Successfully retrieved a movie
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/MovieData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: /movies/{id}
+                      movies:
+                        type: string
+                        example: /movies
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    patch:
+      security:
+        - bearerAuth: []
+      description: Update a movie
+      tags: [Movie]
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieReqData'
+      responses:
+        '200':
+          description: Movie Successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/MovieData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: /movies/{id}
+                      movies:
+                        type: string
+                        example: /movies
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      security:
+        - bearerAuth: []
+      tags: [Movie]
+      description: Delete a movie
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+      responses:
+        '204':
+          description: Movie Dele Successfully
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+
+  # Review - Public + Private
+  "/users/{baseId}/reviews":
+    get:
+      description: Get all reviews of a user
+      tags: [Review]
+      parameters:
+        - $ref: '#/components/parameters/baseIdPathParam'
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/sortTypeParam'
+        - $ref: '#/components/parameters/sortByParam'
+        - $ref: '#/components/parameters/searchParam'
+      responses:
+        '200':
+          description: Reviews retrieved Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReviewData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/users/{baseId}/reviews?page=2&limit=10"
+                      next_page:
+                        type: string
+                        format: url
+                        example: "/users/{baseId}/reviews?page=3&limit=10"
+                      prev_page:
+                        type: string
+                        format: url
+                        example: "/users/{baseId}/reviews?page=1&limit=10" 
+        '500':
+          $ref: '#/components/responses/500'
+
+  "/movies/{baseId}/reviews":
+    get:
+      description: Get all reviews of a movie
+      tags: [Review]
+      parameters:
+        - $ref: '#/components/parameters/baseIdPathParam'
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/sortTypeParam'
+        - $ref: '#/components/parameters/sortByParam'
+        - $ref: '#/components/parameters/searchParam'
+      responses:
+        '200':
+          description: Reviews retrieved Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MovieData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/movies/{baseId}/reviews?page=2&limit=10"
+                      next_page:
+                        type: string
+                        format: url
+                        example: "/movies/{baseId}/reviews?page=3&limit=10"
+                      prev_page:
+                        type: string
+                        format: url
+                        example: "/movies/{baseId}/reviews?page=1&limit=10" 
+        '500':
+          $ref: '#/components/responses/500' 
+    post:
+      security:
+        - bearerAuth: []
+      tags: [Review]
+      parameters:
+        - $ref: '#/components/parameters/baseIdPathParam'
+      description: Create a review
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewReqData'
+      responses:
+        '200':
+          description: Review created Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ReviewData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "/movies/{baseId}/reviews"
+                      review:
+                        type: string
+                        format: url
+                        example: "/movies/{baseId}/reviews/{id}"
+        '400':
+          $ref: '#/components/responses/400'
+        '500':
+          $ref: '#/components/responses/500'
+        
+  
+  "/movies/{baseId}/reviews/{id}":
+    get:
+      description: Get a single review of a movie
+      tags: [Review]
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+        - $ref: "#/components/parameters/baseIdPathParam"
+      responses:
+        '200':
+          description: Successfully retrieved review
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ReviewData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: '/movies/{baseId}/reviews/{id}'
+                      reviews:
+                        type: string
+                        example: '/movies/{baseId}/reviews'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    patch:
+      security:
+        - bearerAuth: []
+      description: Update a review
+      tags: [Review]
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+        - $ref: "#/components/parameters/baseIdPathParam"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewReqData'
+      responses:
+        '200':
+          description: Review retrieved Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ReviewData'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: "/movies/{baseId}/reviews/{id}"
+                      reviews:
+                        type: string
+                        example: "/movies/{baseId}/reviews"
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      security:
+        - bearerAuth: []
+      description: Delete a review
+      tags: [Review]
+      parameters:
+        - $ref: "#/components/parameters/idPathParam"
+        - $ref: "#/components/parameters/baseIdPathParam"
+      responses:
+        '204':
+          description: Review deleted Successfully
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+
+
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthData:
+      type: object
+      properties:
+        id:
+          type: string
+          example: H34H2J2J3=MN=X342HH2243
+        username:
+          type: string
+          example: MD Sakil Hasan
+        email:
+          type: string
+          format: email
+          example: sakil@gmail.com
+      required: [id, username, email]
+    UserData:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: H34H2J2J3=MN=X342HH2243
+            username:
+              type: string
+              example: MD Sakil Hasan
+            email:
+              type: string
+              format: email
+              example: sakil@gmail.com
+            role:
+              type: string
+              enum: [user, admin]
+            totalRated:
+              type: number
+              example: 4.5
+          required: [id, username, email, role, totalRated]
+        - $ref: '#/components/schemas/Timestamp'
+    UserReqData:
+      type: object
+      properties:
+        username:
+          type: string
+          example: MD Sakil Hasan
+        email:
+          type: string
+          format: email
+          example: sakil@gmail.com
+        password:
+          type: string
+          example: dummypassword123
+        role:
+          type: string
+          enum: [user, admin]
+      required: [username, email, password]
+    MovieData:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: H34H2=JXXXXXXXXXXXXXXX
+            authorId :
+              type: string
+              example: H34H2J2J3=MN=X342HH2243
+            title:
+              type: string
+              example: This is a dummy title
+            poster:
+              type: string
+              format: url
+              example: https://s3.amazonaws.com/my-images/poster1.jpg
+            releaseDate:
+              type: string
+              format: date-time
+            duration:
+              type: string
+              example: 2:45:00
+            totalRating:
+              type: number
+              example: 4.5
+            genre:
+              type: string
+              example: action,drama,thriller
+            description:
+              type: string
+              example: Eight years after the Joker's reign of chaos, Batman is coerced out of exile with the assistance of the mysterious Selina Kyle in order to defend Gotham City from the vicious guerrilla terrorist Bane
+          required: [id, authorId, title]
+        - $ref: '#/components/schemas/Timestamp'
+    MovieReqData:
+      type: object
+      properties:
+        title:
+          type: string
+          example: The Dark Knight Rises
+        poster:
+          type: string
+          format: url
+          example: https://s3.amazonaws.com/my-images/poster1.jpg
+        releaseDate:
+          type: string
+          format: date-time
+        duration:
+          type: string
+          example: 2:45:00
+        genre:
+          type: string
+          example: 'action,drama,thriller'
+        description:
+          type: string
+          example: Eight years after the Joker's reign of chaos, Batman is coerced out of exile with the assistance of the mysterious Selina Kyle in order to defend Gotham City from the vicious guerrilla terrorist Bane
+      required: [title, releaseDate]
+    ReviewData:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              example: H34H2=JZZZZZZZZZZZZZZZ
+            movieId :
+              type: string
+              example: H34H2=JXXXXXXXXXXXXXXX
+            userId :
+              type: string
+              example: H34H2J2J3=MN=X342HH2243
+            rating:
+              type: number
+              example: 4.5
+            text:
+              type: string
+              example: I am BATMAN...............
+          required: [id, movieId, userId, rating]
+        - $ref: '#/components/schemas/Timestamp'
+    ReviewReqData:
+      type: object
+      properties:
+        rating:
+          type: number
+          example: 4.5
+        text:
+          type: string
+          example: I am BATMAN......
+      required: [rating]
+    Timestamp:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [createdAt, updatedAt]
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          example: 2
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        totalPage:
+          type: integer
+          format: int32
+          example: 5
+        totalItems:
+          type: integer
+          format: int32
+          example: 50
+        nextPage:
+          type: integer
+          format: int32
+          example: 3
+        prevPage:
+          type: integer
+          format: int32
+          example: 1
+      required: [page, limit, totalPage, totalItems]
+
+  responses:
+    '400':
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 400
+              error:
+                type: string
+                example: Bad Request
+              data:
+                type: object
+                properties:
+                  field:
+                    type: string
+                    example: email
+                  message:
+                    type: string
+                    example: Invalid email
+                  in:
+                    type: string
+                    example: body
+    '401':
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 401
+              error:
+                type: string
+                example: Unauthorized
+              message:
+                type: string
+                example: You must login first
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 401
+              error:
+                type: string
+                example: Forbidden
+              message:
+                type: string
+                example: You don't have access to this resource
+    '404':
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 404
+              error:
+                type: string
+                example: Not Found
+              message:
+                type: string
+                example: Resource not found
+    '409':
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 409
+              error:
+                type: string
+                example: Conflict
+              message:
+                type: string
+                example: Email already exists
+    "500":
+      description: "Internal Server Error"
+      content:
+        "application/json":
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 500
+              error:
+                type: string
+                example: Internal Server Error
+              message:
+                type: string
+                example: We are sorry for the inconvenience. Please try again later
+
+  parameters:
+    pageParam:
+      in: query
+      name: page
+      description: Current page number
+      required: true
+      schema:
+        type: integer
+        format: int32
+        example: 2
+    limitParam:
+      in: query
+      name: limit
+      description: Maximum item to be returned in one page
+      required: true
+      schema:
+        type: integer
+        format: int32
+        example: 10
+    sortTypeParam:
+      in: query
+      name: sort_type
+      description: type of sorting (asc or dsc)
+      schema:
+        type: string
+        enum: [asc, dsc]
+        example: dsc
+    sortByParam:
+      in: query
+      name: sort_by
+      description: Sorting key (updatedAt or title)
+      schema:
+        type: string
+        enum: [updatedAt, title]
+        example: updatedAt
+    searchParam:
+      in: query
+      name: search
+      description: Search term
+      schema:
+        type: string
+        example: example title
+    idPathParam:
+      in: path
+      name: id
+      description: Resource ID
+      required: true
+      schema:
+        type: string
+        example: ResourceId123XYZ
+    baseIdPathParam:
+      in: path
+      name: baseId
+      description: Base Resource ID
+      required: true
+      schema:
+        type: string
+        example: BaseId123ABC
