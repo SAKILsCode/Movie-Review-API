@@ -1,3 +1,9 @@
+/**
+ * Title: Main Application
+ * Description: Application root file, indicates all app level work.
+ */
+
+// Dependencies
 const express = require('express');
 const middleware = require('./middleware');
 
@@ -6,7 +12,8 @@ const app = express()
 
 // Applying middlewares
 middleware(app)
-// app.use(routes)
+
+// TODO: Routes
 
 // health endpoint
 app.get('/health', (req, res) => {
@@ -15,6 +22,6 @@ app.get('/health', (req, res) => {
   })
 })
 
-// TODO: Handling errors here
+// TODO: Handling errors 
 
 module.exports = app
