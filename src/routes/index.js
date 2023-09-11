@@ -35,6 +35,9 @@ router
 // User Movies
 router.get('/api/v1/use rs/:id/movies', userController.findUserMovies)
 
+// User Reviews
+router.get('/api/v1/users/:id/reviews', userController.findUserReviews)
+
 // Movie routes
 router
   .route('/api/v1/movies')
@@ -45,9 +48,6 @@ router
   .get(movieController.findSingleMovie)
   .patch(movieController.updateMovie)
   .delete(movieController.deleteMovie)
-
-// User Reviews
-router.get('/api/v1/users/:id/reviews', userController.findUserReviews)
 
 // Review routes
 router
