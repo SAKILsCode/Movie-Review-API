@@ -27,7 +27,7 @@ tags:
 
 paths:
   # Auth - Public
-  "/auth/signup":
+  '/auth/signup':
     post:
       description: Create a new account
       tags: [Auth]
@@ -77,9 +77,9 @@ paths:
           $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
-     
-  "/auth/login":
-   post:
+
+  '/auth/login':
+    post:
       description: Login to an account
       tags: [Auth]
       requestBody:
@@ -116,8 +116,7 @@ paths:
                           access_token:
                             type: string
                             example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
-                    
-                    
+
                   links:
                     type: object
                     properties:
@@ -129,8 +128,9 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
+
   # Profile - Private
-  "/profile":
+  '/profile':
     patch:
       security:
         - bearerAuth: []
@@ -142,7 +142,7 @@ paths:
             schema:
               type: object
               properties:
-                name:
+                username:
                   type: string
                   example: MD Sakil Hasan
                 email:
@@ -164,7 +164,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Signin successful
+                    example: Successfully updated
                   data:
                     $ref: '#/components/schemas/UserData'
                   links:
@@ -198,8 +198,9 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
+
   # User - Public + Private (admin only)
-  "/users":
+  '/users':
     get:
       description: Get all existing users
       tags: [User]
@@ -229,15 +230,15 @@ paths:
                       self:
                         type: string
                         format: url
-                        example: "/users?page=2&limit=10"
+                        example: '/users?page=2&limit=10'
                       next_page:
                         type: string
                         format: url
-                        example: "/users?page=3&limit=10"
+                        example: '/users?page=3&limit=10'
                       prev_page:
                         type: string
                         format: url
-                        example: "/users?page=1&limit=10"
+                        example: '/users?page=1&limit=10'
         '500':
           $ref: '#/components/responses/500'
     post:
@@ -276,7 +277,7 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
-  "/users/{id}":
+  '/users/{id}':
     get:
       description: Get a single user
       tags: [User]
@@ -369,13 +370,12 @@ paths:
         '500':
           $ref: '#/components/responses/500'
 
-  # Movie - Public + Private
-  "/users/{baseId}/movies":
+  '/users/{id}/movies':
     get:
       description: Get all movies of a user
-      tags: [Movie]
+      tags: [User]
       parameters:
-        - $ref: '#/components/parameters/baseIdPathParam'
+        - $ref: '#/components/parameters/idPathParam'
         - $ref: '#/components/parameters/pageParam'
         - $ref: '#/components/parameters/limitParam'
         - $ref: '#/components/parameters/sortTypeParam'
@@ -401,19 +401,64 @@ paths:
                       self:
                         type: string
                         format: url
-                        example: "/users/{baseId}/movies?page=2&limit=10"
+                        example: '/users/{baseId}/movies?page=2&limit=10'
                       next_page:
                         type: string
                         format: url
-                        example: "/users/{baseId}/movies?page=3&limit=10"
+                        example: '/users/{baseId}/movies?page=3&limit=10'
                       prev_page:
                         type: string
                         format: url
-                        example: "/users/{baseId}/movies?page=1&limit=10"  
+                        example: '/users/{baseId}/movies?page=1&limit=10'
         '500':
           $ref: '#/components/responses/500'
-  
-  "/movies":
+
+  '/users/{id}/reviews':
+    get:
+      description: Get all reviews of a user
+      tags: [User]
+      parameters:
+        - $ref: '#/components/parameters/idPathParam'
+        - $ref: '#/components/parameters/pageParam'
+        - $ref: '#/components/parameters/limitParam'
+        - $ref: '#/components/parameters/sortTypeParam'
+        - $ref: '#/components/parameters/sortByParam'
+        - $ref: '#/components/parameters/searchParam'
+      responses:
+        '200':
+          description: Reviews retrieved Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReviewData'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: '/users/{baseId}/reviews?page=2&limit=10'
+                      next_page:
+                        type: string
+                        format: url
+                        example: '/users/{baseId}/reviews?page=3&limit=10'
+                      prev_page:
+                        type: string
+                        format: url
+                        example: '/users/{baseId}/reviews?page=1&limit=10'
+        '500':
+          $ref: '#/components/responses/500'
+
+
+  # Movie - Public + Private
+  '/movies':
     get:
       description: Get all movies
       tags: [Movie]
@@ -443,15 +488,15 @@ paths:
                       self:
                         type: string
                         format: url
-                        example: "/movies?page=2&limit=10"
+                        example: '/movies?page=2&limit=10'
                       next_page:
                         type: string
                         format: url
-                        example: "/movies?page=3&limit=10"
+                        example: '/movies?page=3&limit=10'
                       prev_page:
                         type: string
                         format: url
-                        example: "/movies?page=1&limit=10" 
+                        example: '/movies?page=1&limit=10'
         '500':
           $ref: '#/components/responses/500'
     post:
@@ -484,11 +529,11 @@ paths:
                         type: string
                         example: /movies/{id}
         '400':
-          $ref: '#/components/responses/400'        
+          $ref: '#/components/responses/400'
         '500':
-          $ref: '#/components/responses/500'        
+          $ref: '#/components/responses/500'
 
-  "/movies/{id}":
+  '/movies/{id}':
     get:
       description: Get a single movie
       tags: [Movie]
@@ -572,53 +617,10 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
-
+          
 
   # Review - Public + Private
-  "/users/{baseId}/reviews":
-    get:
-      description: Get all reviews of a user
-      tags: [Review]
-      parameters:
-        - $ref: '#/components/parameters/baseIdPathParam'
-        - $ref: '#/components/parameters/pageParam'
-        - $ref: '#/components/parameters/limitParam'
-        - $ref: '#/components/parameters/sortTypeParam'
-        - $ref: '#/components/parameters/sortByParam'
-        - $ref: '#/components/parameters/searchParam'
-      responses:
-        '200':
-          description: Reviews retrieved Successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  data:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/ReviewData'
-                  pagination:
-                    $ref: '#/components/schemas/Pagination'
-                  links:
-                    type: object
-                    properties:
-                      self:
-                        type: string
-                        format: url
-                        example: "/users/{baseId}/reviews?page=2&limit=10"
-                      next_page:
-                        type: string
-                        format: url
-                        example: "/users/{baseId}/reviews?page=3&limit=10"
-                      prev_page:
-                        type: string
-                        format: url
-                        example: "/users/{baseId}/reviews?page=1&limit=10" 
-        '500':
-          $ref: '#/components/responses/500'
-
-  "/movies/{baseId}/reviews":
+  '/movies/{baseId}/reviews':
     get:
       description: Get all reviews of a movie
       tags: [Review]
@@ -649,17 +651,17 @@ paths:
                       self:
                         type: string
                         format: url
-                        example: "/movies/{baseId}/reviews?page=2&limit=10"
+                        example: '/movies/{baseId}/reviews?page=2&limit=10'
                       next_page:
                         type: string
                         format: url
-                        example: "/movies/{baseId}/reviews?page=3&limit=10"
+                        example: '/movies/{baseId}/reviews?page=3&limit=10'
                       prev_page:
                         type: string
                         format: url
-                        example: "/movies/{baseId}/reviews?page=1&limit=10" 
+                        example: '/movies/{baseId}/reviews?page=1&limit=10'
         '500':
-          $ref: '#/components/responses/500' 
+          $ref: '#/components/responses/500'
     post:
       security:
         - bearerAuth: []
@@ -688,24 +690,23 @@ paths:
                       self:
                         type: string
                         format: url
-                        example: "/movies/{baseId}/reviews"
+                        example: '/movies/{baseId}/reviews'
                       review:
                         type: string
                         format: url
-                        example: "/movies/{baseId}/reviews/{id}"
+                        example: '/movies/{baseId}/reviews/{id}'
         '400':
           $ref: '#/components/responses/400'
         '500':
           $ref: '#/components/responses/500'
-        
-  
-  "/movies/{baseId}/reviews/{id}":
+
+  '/movies/{baseId}/reviews/{id}':
     get:
       description: Get a single review of a movie
       tags: [Review]
       parameters:
-        - $ref: "#/components/parameters/idPathParam"
-        - $ref: "#/components/parameters/baseIdPathParam"
+        - $ref: '#/components/parameters/idPathParam'
+        - $ref: '#/components/parameters/baseIdPathParam'
       responses:
         '200':
           description: Successfully retrieved review
@@ -735,8 +736,8 @@ paths:
       description: Update a review
       tags: [Review]
       parameters:
-        - $ref: "#/components/parameters/idPathParam"
-        - $ref: "#/components/parameters/baseIdPathParam"
+        - $ref: '#/components/parameters/idPathParam'
+        - $ref: '#/components/parameters/baseIdPathParam'
       requestBody:
         content:
           application/json:
@@ -757,10 +758,10 @@ paths:
                     properties:
                       self:
                         type: string
-                        example: "/movies/{baseId}/reviews/{id}"
+                        example: '/movies/{baseId}/reviews/{id}'
                       reviews:
                         type: string
-                        example: "/movies/{baseId}/reviews"
+                        example: '/movies/{baseId}/reviews'
         '400':
           $ref: '#/components/responses/400'
         '404':
@@ -773,8 +774,8 @@ paths:
       description: Delete a review
       tags: [Review]
       parameters:
-        - $ref: "#/components/parameters/idPathParam"
-        - $ref: "#/components/parameters/baseIdPathParam"
+        - $ref: '#/components/parameters/idPathParam'
+        - $ref: '#/components/parameters/baseIdPathParam'
       responses:
         '204':
           description: Review deleted Successfully
@@ -786,8 +787,7 @@ paths:
           $ref: '#/components/responses/404'
         '500':
           $ref: '#/components/responses/500'
-
-
+          
 
 components:
   securitySchemes:
@@ -857,7 +857,7 @@ components:
             id:
               type: string
               example: H34H2=JXXXXXXXXXXXXXXX
-            authorId :
+            authorId:
               type: string
               example: H34H2J2J3=MN=X342HH2243
             title:
@@ -914,10 +914,10 @@ components:
             id:
               type: string
               example: H34H2=JZZZZZZZZZZZZZZZ
-            movieId :
+            movieId:
               type: string
               example: H34H2=JXXXXXXXXXXXXXXX
-            userId :
+            userId:
               type: string
               example: H34H2J2J3=MN=X342HH2243
             rating:
@@ -1072,10 +1072,10 @@ components:
               message:
                 type: string
                 example: Email already exists
-    "500":
-      description: "Internal Server Error"
+    '500':
+      description: 'Internal Server Error'
       content:
-        "application/json":
+        'application/json':
           schema:
             type: object
             properties:
