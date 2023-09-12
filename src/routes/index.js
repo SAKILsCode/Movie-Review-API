@@ -3,7 +3,7 @@
  * Description: Handles all the routings of the application.
  */
 
-// Dependencies
+// Dependencies and imported files
 const router = require('express').Router()
 const {controllers: userController} = require('../api/v1/user')
 const {controllers: movieController} = require('../api/v1/movie')
@@ -33,7 +33,7 @@ router
   .delete(userController.deleteUser)
 
 // User Movies
-router.get('/api/v1/use rs/:id/movies', userController.findUserMovies)
+router.get('/api/v1/users/:id/movies', userController.findUserMovies)
 
 // User Reviews
 router.get('/api/v1/users/:id/reviews', userController.findUserReviews)
@@ -51,11 +51,11 @@ router
 
 // Review routes
 router
-  .route('/api/v1/reviews')
+  .route('/api/v1/movies/:movieId/reviews')
   .get(reviewController.findAllReviews)
   .post(reviewController.createReview)
 router
-  .route('/api/v1/reviews/:id')
+  .route('/api/v1/movies/:movieId/reviews/:id')
   .get(reviewController.findSingleReview)
   .patch(reviewController.updateReview)
   .delete(reviewController.deleteReview)
