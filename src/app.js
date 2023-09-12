@@ -6,22 +6,41 @@
 // Dependencies
 const express = require('express');
 const middleware = require('./middleware');
+const router = require('./routes');
+const { notFound } = require('./utils/error');
 
 // Express app
-const app = express()
+const app = express();
 
 // Applying middlewares
-middleware(app)
+middleware(app);
 
-// TODO: Routes
+// Routes middleware
+app.use(router);
 
 // health endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({
-    health: 'OK'
-  })
+    health: 'OK',
+  });
+});
+
+// Handling errors
+app.use('*', (_req, _res, next) => {
+  const error = notFound()
+  next(error)
 })
 
-// TODO: Handling errors 
+app.use((error, _req, res, _next) => {
+  console.log(error);
+  res.status(error.status || 500).json({
+    code: error.status,
+    error: error.error,
+    message: error.message,
+    data: error.errors,
+  });
 
-module.exports = app
+  res.end();
+});
+
+module.exports = app;
