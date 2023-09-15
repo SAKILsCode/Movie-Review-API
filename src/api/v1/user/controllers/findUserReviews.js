@@ -1,21 +1,23 @@
 // Import external services and dependencies
 const { query } = require('../../../../utils');
-const userService = require('../../../../lib/user');
-const defaultValues = require('../../../../config/defaults');
+const { findUserReviews: userReviews, count } = require('../../../../lib/user');
+const { reviewCount } = require('../../../../lib/review');
+const defaults = require('../../../../config/defaults');
 
 // Find all reviews of a users Controller
 const findUserReviews = async (req, res, next) => {
+  // Params id
+  const authorId = req.params.id;
   // query data
-  const id = req.query.id;
-  const page = req.query.page || defaultValues.page;
-  const limit = req.query.limit || defaultValues.limit;
-  const sortType = req.query.sort_type || defaultValues.sortType;
-  const sortBy = req.query.sort_by || defaultValues.sortBy;
-  const search = req.query.search || defaultValues.search;
+  const page = req.query.page || defaults.page;
+  const limit = req.query.limit || defaults.limit;
+  const sortType = req.query.sort_type || defaults.sortType;
+  const sortBy = req.query.sort_by || defaults.sortBy;
+  const search = req.query.search || defaults.search;
 
   // Using Find All user reviews service
   try {
-    const reviews = await userService.findUserReviews(id, {
+    const reviews = await userReviews(authorId, {
       page,
       limit,
       sortType,
@@ -26,7 +28,7 @@ const findUserReviews = async (req, res, next) => {
     // data transformation
     const data = query.transformItems({
       items: reviews,
-      path: '/reviews',
+      path: req.path,
       selection: [
         'id',
         'movieId',
@@ -40,15 +42,15 @@ const findUserReviews = async (req, res, next) => {
     });
 
     // pagination
-    const totalItems = await userService.countUserReviews({ search });
+    const totalItems = await reviewCount(search);
     const pagination = query.getPagination({ totalItems, limit, page });
 
     // HATEOAS Links
     const links = query.allItemsHATEOAS({
       path: req.path,
       query: req.query,
-      hasNext: !!pagination.next,
-      hasPrev: !!pagination.prev,
+      hasNext: !!pagination.nextPage,
+      hasPrev: !!pagination.prevPage,
       page,
     });
 

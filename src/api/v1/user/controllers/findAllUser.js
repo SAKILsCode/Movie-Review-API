@@ -1,20 +1,22 @@
 // Import external services and dependencies
 const { query } = require('../../../../utils');
-const userService = require('../../../../lib/user');
-const defaultValues = require('../../../../config/defaults');
+const { findAll, count } = require('../../../../lib/user');
+const defaults = require('../../../../config/defaults');
+
+
 
 // Find all users Controller
 const findAllUsers = async (req, res, next) => {
   // query data
-  const page = req.query.page || defaultValues.page;
-  const limit = req.query.limit || defaultValues.limit;
-  const sortType = req.query.sort_type || defaultValues.sortType;
-  const sortBy = req.query.sort_by || defaultValues.sortBy;
-  const search = req.query.search || defaultValues.search;
+  const page = req.query.page || defaults.page;
+  const limit = req.query.limit || defaults.limit;
+  const sortType = req.query.sort_type || defaults.sortType;
+  const sortBy = req.query.sort_by || defaults.sortBy;
+  const search = req.query.search || defaults.search;
 
   // Using Find All service
   try {
-    const users = await userService.findAllUsers({
+    const users = await findAll({
       page,
       limit,
       sortType,
@@ -22,10 +24,11 @@ const findAllUsers = async (req, res, next) => {
       search,
     });
 
+    
     // data transformation
     const data = query.transformItems({
       items: users,
-      path: '/users',
+      path: req.path,
       selection: [
         'id',
         'username',
@@ -38,15 +41,15 @@ const findAllUsers = async (req, res, next) => {
     });
 
     // pagination
-    const totalItems = await userService.countUsers({ search });
+    const totalItems = await count(search);
     const pagination = query.getPagination({ totalItems, limit, page });
 
     // HATEOAS Links
     const links = query.allItemsHATEOAS({
       path: req.path,
       query: req.query,
-      hasNext: !!pagination.next,
-      hasPrev: !!pagination.prev,
+      hasNext: !!pagination.nextPage,
+      hasPrev: !!pagination.prevPage,
       page,
     });
 
@@ -65,3 +68,5 @@ const findAllUsers = async (req, res, next) => {
 };
 
 module.exports = findAllUsers;
+
+

@@ -1,5 +1,5 @@
 // Import external services and dependencies
-const userService = require('../../../../lib/user')
+const {create} = require('../../../../lib/user')
 
 // Create user Controller
 const createUser = async (req, res, next) => {
@@ -19,7 +19,7 @@ const createUser = async (req, res, next) => {
       totalRated,
       createdAt,
       updatedAt,
-    } = await userService.createUser({
+    } = await create({
       username,
       email,
       password,
@@ -39,7 +39,7 @@ const createUser = async (req, res, next) => {
       },
       links:{
         self: req.path,
-        user: `/users/${id}`
+        user: `${req.path}/${id}`
       },
     };
 

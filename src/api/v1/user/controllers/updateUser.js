@@ -1,27 +1,26 @@
 // Import external services and dependencies
-const userService = require('../../../../lib/user');
+const { update } = require('../../../../lib/user');
 
 // Update user Controller
 const updateUser = async (req, res, next) => {
   // query data
-  const id = req.query.id
+  const id = req.params.id;
   // Request data
-  const username = req.body.username
-  const email = req.body.email
-  const password = req.body.password
-  const role = req.body.role
+  const username = req.body.username;
+  const email = req.body.email;
+  const password = req.body.password;
+  const role = req.body.role;
 
-  // Using updateUser service
+  // Using update User service
   try {
     const {
       id: userId,
       username: name,
       email: userEmail,
       role: userRole,
-      totalRated,
       createdAt,
       updatedAt,
-    } = await userService.updateUser(id, {username, email, password, role});
+    } = await update(id, { username, email, password, role });
 
     // Structured Response object
     const response = {
@@ -30,13 +29,12 @@ const updateUser = async (req, res, next) => {
         username: name,
         email: userEmail,
         role: userRole,
-        totalRated,
         createdAt,
         updatedAt,
       },
       links: {
         self: req.path,
-        user_movies: `/users/${id}/movies`,
+        user_movies: `${req.path}/movies`,
       },
     };
 

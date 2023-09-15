@@ -1,10 +1,10 @@
 // Import external services and dependencies
-const userService = require('../../../../lib/user');
+const {findSingle} = require('../../../../lib/user');
 
 // Find user Controller
 const findSingleUser = async (req, res, next) => {
-  // query data
-  const id = req.query.id;
+  // Req data
+  const id = req.params.id;
 
   // Using findUser service
   try {
@@ -16,7 +16,7 @@ const findSingleUser = async (req, res, next) => {
       totalRated,
       createdAt,
       updatedAt,
-    } = await userService.findUser(id);
+    } = await findSingle(id);
 
     // Structured Response object
     const response = {
@@ -31,7 +31,7 @@ const findSingleUser = async (req, res, next) => {
       },
       links: {
         self: req.path,
-        user_movies: `/users/${id}/movies`,
+        user_movies: `${req.path}/movies`,
       },
     };
 
