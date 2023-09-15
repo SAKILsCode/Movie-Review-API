@@ -282,6 +282,8 @@ paths:
           $ref: '#/components/responses/401'
         '403':
           $ref: '#/components/responses/403'
+        '409':
+          $ref: '#/components/responses/409'
         '500':
           $ref: '#/components/responses/500'
 
@@ -588,7 +590,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MovieReqData'
+              allOf:
+                - $ref: '#/components/schemas/MovieReqData'
+
+
       responses:
         '200':
           description: Movie Successfully updated
@@ -627,7 +632,7 @@ paths:
         - $ref: '#/components/parameters/idPathParam'
       responses:
         '204':
-          description: Movie Dele Successfully
+          description: Movie Deleted Successfully
         '401':
           $ref: '#/components/responses/401'
         '403':
@@ -856,9 +861,6 @@ components:
             role:
               type: string
               enum: [user, admin]
-            totalRated:
-              type: number
-              example: 4.5
           required: [id, username, email, role, totalRated]
         - $ref: '#/components/schemas/Timestamp'
     UserReqData:
@@ -910,11 +912,14 @@ components:
             description:
               type: string
               example: Eight years after the Joker's reign of chaos, Batman is coerced out of exile with the assistance of the mysterious Selina Kyle in order to defend Gotham City from the vicious guerrilla terrorist Bane
-          required: [id, authorId, title]
+          required: [id, authorId, title, releaseDate]
         - $ref: '#/components/schemas/Timestamp'
     MovieReqData:
       type: object
       properties:
+        authorId:
+          type: string
+          example: AuthorID_WillBeRemovedFromReqLater
         title:
           type: string
           example: The Dark Knight Rises
@@ -934,7 +939,7 @@ components:
         description:
           type: string
           example: Eight years after the Joker's reign of chaos, Batman is coerced out of exile with the assistance of the mysterious Selina Kyle in order to defend Gotham City from the vicious guerrilla terrorist Bane
-      required: [title, releaseDate]
+      required: [title]
     ReviewData:
       allOf:
         - type: object
@@ -1024,7 +1029,7 @@ components:
                 type: string
                 example: Invalid Data
               data:
-                type: object                
+                type: object
     '401':
       description: Unauthorized
       content:
