@@ -1,10 +1,10 @@
 // Import external services and dependencies
-const movieService = require('../../../../lib/movie');
+const {findSingle} = require('../../../../lib/movie');
 
 // Find movie Controller
 const findSingleMovie = async (req, res, next) => {
   // query data
-  const id = req.query.id;
+  const id = req.params.id;
 
   // Using findMovie service
   try {
@@ -20,7 +20,7 @@ const findSingleMovie = async (req, res, next) => {
       description: movieDescription,
       createdAt,
       updatedAt,
-    } = await movieService.findMovie(id);
+    } = await findSingle(id);
 
     // Structured Response object
     const response = {

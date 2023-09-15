@@ -1,5 +1,5 @@
 // Import Movie Service
-const movieService = require('../../../../lib/movie');
+const { deleteOne } = require('../../../../lib/movie');
 
 // Delete movie controller
 const deleteMovie = async (req, res, next) => {
@@ -7,14 +7,13 @@ const deleteMovie = async (req, res, next) => {
 
   try {
     // Deleting by deleteMovie service
-    await movieService.deleteMovie(id);
+    await deleteOne(id);
 
     // send response
     res.status(204).end();
   } catch (error) {
     next(error);
   }
-}
+};
 
-module.exports = deleteMovie
-
+module.exports = deleteMovie;

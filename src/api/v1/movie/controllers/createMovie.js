@@ -1,5 +1,5 @@
 // Import external services and dependencies
-const movieService = require('../../../../lib/movie');
+const { create } = require('../../../../lib/movie');
 
 // Create movie Controller
 const createMovie = async (req, res, next) => {
@@ -10,6 +10,9 @@ const createMovie = async (req, res, next) => {
   const duration = req.body.duration;
   const genre = req.body.genre;
   const description = req.body.description;
+
+  // TODO: authorId must be removed later while changing service function
+  const author = req.body.authorId;
 
   // Using Create movie service
   try {
@@ -25,7 +28,8 @@ const createMovie = async (req, res, next) => {
       description: movieDescription,
       createdAt,
       updatedAt,
-    } = await movieService.createMovie({
+    } = await create({
+      authorId: author,
       title,
       poster,
       releaseDate,
@@ -43,6 +47,7 @@ const createMovie = async (req, res, next) => {
         poster: moviePoster,
         releaseDate: movieReleaseDate,
         duration: movieDuration,
+        totalRating,
         genre: movieGenre,
         description: movieDescription,
         createdAt,

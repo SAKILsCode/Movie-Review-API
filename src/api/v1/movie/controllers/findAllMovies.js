@@ -1,7 +1,9 @@
 // Import external services and dependencies
 const { query } = require('../../../../utils');
-const movieService = require('../../../../lib/movie');
+const {findAll, count} = require('../../../../lib/movie');
 const defaultValues = require('../../../../config/defaults');
+const { getPagination, allItemsHATEOAS } = require('../../../../utils/query');
+
 
 // Find all movies Controller
 const findAllMovies = async (req, res, next) => {
@@ -14,7 +16,7 @@ const findAllMovies = async (req, res, next) => {
 
   // Using Find All service
   try {
-    const movies = await movieService.findAllMovies({
+    const movies = await findAll({
       page,
       limit,
       sortType,
@@ -42,15 +44,15 @@ const findAllMovies = async (req, res, next) => {
     });
 
     // pagination
-    const totalItems = await movieService.countMovies({ search });
+    const totalItems = await count(search);
     const pagination = query.getPagination({ totalItems, limit, page });
 
     // HATEOAS Links
     const links = query.allItemsHATEOAS({
       path: req.path,
       query: req.query,
-      hasNext: !!pagination.next,
-      hasPrev: !!pagination.prev,
+      hasNext: !!pagination.nextPage,
+      hasPrev: !!pagination.prevPage,
       page,
     });
 

@@ -1,10 +1,10 @@
 // Import external services and dependencies
-const movieService = require('../../../../lib/movie');
+const { update } = require('../../../../lib/movie');
 
 // Update movie Controller
 const updateMovie = async (req, res, next) => {
   // query data
-  const id = req.query.id;
+  const id = req.params.id;
   // Request data
   const title = req.body.title;
   const poster = req.body.poster;
@@ -16,7 +16,7 @@ const updateMovie = async (req, res, next) => {
   // Using update movie service
   try {
     const {
-      id,
+      id: movieId,
       authorId,
       title: movieTitle,
       poster: moviePoster,
@@ -27,7 +27,7 @@ const updateMovie = async (req, res, next) => {
       description: movieDescription,
       createdAt,
       updatedAt,
-    } = await movieService.updateMovie(id, {
+    } = await update(id, {
       title,
       poster,
       releaseDate,
@@ -39,11 +39,15 @@ const updateMovie = async (req, res, next) => {
     // Structured Response object
     const response = {
       data: {
-        id: userId,
-        username: name,
-        email: userEmail,
-        role: userRole,
-        totalRated,
+        id: movieId,
+        authorId,
+        title: movieTitle,
+        poster: moviePoster,
+        releaseDate: movieReleaseDate,
+        duration: movieDuration,
+        totalRating,
+        genre: movieGenre,
+        description: movieDescription,
         createdAt,
         updatedAt,
       },
