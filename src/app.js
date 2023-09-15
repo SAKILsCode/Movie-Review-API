@@ -27,13 +27,21 @@ app.get('/health', (_req, res) => {
 
 // Handling errors
 app.use('*', (_req, _res, next) => {
-  const error = notFound()
-  next(error)
-})
+  const error = notFound();
+  next(error);
+});
 
 app.use((error, _req, res, _next) => {
+  if (error.status === 400)
+    error.message =
+      error.message.length > 30 ? 'Invalid Inputs...' : error.message;
+
+  if (error.status === 500)
+    error.message =
+      error.message.length > 30 ? 'Internal Server Error...' : error.message;
+
   console.log(error);
-  res.status(error.status || 500).json({
+  res.status(error.status).json({
     code: error.status,
     error: error.error,
     message: error.message,
