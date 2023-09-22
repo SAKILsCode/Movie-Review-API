@@ -1,18 +1,30 @@
 /**
  * Title: User Service
- * Description: This file contains all the business logics and service functions need to implement all the actions on User entity.
+ * Description: This file contains all the business logics and service functions need to implement all the actions on User resource.
  */
 
 // Dependencies and other imports
-const { default: mongoose } = require('mongoose');
 const defaults = require('../../config/defaults');
 const { User, Movie, Review } = require('../../model');
 const { conflict, badRequest, notFound } = require('../../utils/error');
-const { findAll: findAllUtil, countAll, findAllof } = require('../utils');
+const { countAll, findAllOf, mongooseIdValidator } = require('../utils');
+const { generateHash } = require('../../utils/hashing');
+const { deleteAllMovies } = require('../movie');
+const { deleteAllReviews } = require('../review');
+
+/**
+ * Find a user by email
+ * @param {String} email
+ * @returns {Promise}
+ */
+const findUserByEmail = async (email) => {
+  const user = await User.findOne({ email });
+  return user ? user : false;
+};
 
 /**
  * Find all filtered Users
- * @param {*} param0 
+ * @param {Object} queryObject
  * @returns {Array}
  */
 const findAll = async ({
@@ -22,30 +34,36 @@ const findAll = async ({
   sortBy = defaults.sortBy,
   search = defaults.search,
 }) => {
-  return findAllUtil(User, { page, limit, sortType, sortBy, search });
+  return findAllOf(
+    User,
+    { username: search },
+    { page, limit, sortType, sortBy }
+  );
 };
 
 /**
  * Count all filtered Users
- * @param {*} search 
+ * @param {String} search
  * @returns {Promise}
  */
 const count = (search = defaults.search) => {
-  console.log(search);
-  return countAll(User, search);
+  return countAll(User, { username: search });
 };
 
 /**
  * Create a User
- * @param {*} param0 
+ * @param {Object} requestObject
  * @returns {Object}
  */
-const create = async ({ username, email, password, role }) => {
-  if (!username || !email || !password || !role)
+const create = async ({ username, email, password, role = 'user' }) => {
+  if (!username || !email || !password)
     throw badRequest('Invalid credentials.');
 
-  const existingUser = await User.findOne({ email: email });
+  const existingUser = await findUserByEmail(email);
   if (existingUser) throw conflict('User already exist.');
+
+  // Hash password
+  password = await generateHash(password);
 
   const user = new User({
     username,
@@ -53,8 +71,6 @@ const create = async ({ username, email, password, role }) => {
     password,
     role,
   });
-
-  // TODO: hash password before saving
 
   await user.save();
   return {
@@ -70,8 +86,7 @@ const create = async ({ username, email, password, role }) => {
  * @returns {Object}
  */
 const findSingle = async (id) => {
-  if (!mongoose.Types.ObjectId.isValid(id))
-    throw badRequest('Invalid User Id.');
+  if (!mongooseIdValidator(id)) throw badRequest('Invalid User Id.');
 
   const user = await User.findById(id);
   if (!user) throw notFound("User doesn't exist.");
@@ -85,20 +100,21 @@ const findSingle = async (id) => {
  * @param {Object} param1
  * @returns {Object}
  */
-const update = async (
-  id,
-  { username, email, password, role }
-) => {
-  if (!username || !email || !password || !role) throw badRequest('Invalid credentials.');
-  if (!mongoose.Types.ObjectId.isValid(id)) throw badRequest('Invalid User Id.');
+const update = async (id, { username, email, password, role }) => {
+  if (!username && !email && !password && !role)
+    throw badRequest('Request cannot be empty field.');
+
+  if (!mongooseIdValidator(id)) throw badRequest('Invalid User Id.');
 
   const user = await User.findById(id);
   if (!user) throw notFound("User doesn't exist.");
 
-  const checkUser = await User.findOne({ email: email });
-  if (checkUser && checkUser.id !== user.id) throw conflict('Email belongs to another user.');
+  const checkUser = await findUserByEmail(email);
+  if (checkUser && checkUser.id !== user.id)
+    throw conflict('Email belongs to another user.');
 
-  // TODO: hash password before saving
+  // Hash password
+  if (password) password = await generateHash(password);
 
   // Change user
   user.username = username || user.username;
@@ -119,15 +135,18 @@ const update = async (
  * @returns {Object}
  */
 const deleteOne = async (id) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) throw badRequest('Invalid User Id.');
+  if (!mongooseIdValidator(id)) throw badRequest('Invalid User Id.');
+
+  // Delete all user reviews
+  await deleteAllReviews({ authorId: id });
+
+  // Delete all user movies
+  await deleteAllMovies(id);
 
   const user = await User.findByIdAndDelete(id);
-  if(!user) throw notFound('User doesn\'t exist.')
+  if (!user) throw notFound("User doesn't exist.");
 
-  // TODO: Delete all user movies
-  // TODO: Delete all user reviews
-
-  return user
+  return user;
 };
 
 /**
@@ -136,17 +155,20 @@ const deleteOne = async (id) => {
  * @param {Object} queryParams
  * @returns {Array}
  */
-const findUserMovies = async (authorId, queryParams) => {
-  try {
-		if (!mongoose.Types.ObjectId.isValid(authorId)) throw badRequest('Invalid Movie Id.');
+const findUserMovies = async (
+  authorId,
+  { page, limit, sortType, sortBy, search }
+) => {
+  if (!mongooseIdValidator(authorId)) throw badRequest('Invalid Author Id.');
 
-    const user = await User.findById(authorId);
-    if (!user) throw notFound("Author doesn't exist.");
+  const user = await User.findById(authorId);
+  if (!user) throw notFound("Author doesn't exist.");
 
-    return findAllof(authorId, Movie, queryParams);
-  } catch (error) {
-    throw error;
-  }
+  return findAllOf(
+    Movie,
+    { title: search, authorId },
+    { page, limit, sortType, sortBy }
+  );
 };
 
 /**
@@ -155,17 +177,30 @@ const findUserMovies = async (authorId, queryParams) => {
  * @param {Object} queryParams
  * @returns {Array}
  */
-const findUserReviews = async (authorId, queryParams) => {
-  try {
-		if (!mongoose.Types.ObjectId.isValid(authorId)) throw badRequest('Invalid Movie Id.');
+const findUserReviews = async (
+  authorId,
+  { page, limit, sortType, sortBy, search }
+) => {
+  if (!mongooseIdValidator(authorId)) throw badRequest('Invalid Author Id.');
 
-    const user = await User.findById(authorId);
-    if (!user) throw notFound("Author doesn't exist.");
+  const user = await User.findById(authorId);
+  if (!user) throw notFound("Author doesn't exist.");
 
-    return findAllof(authorId, Review, queryParams);
-  } catch (error) {
-    throw error;
-  }
+  return findAllOf(
+    Review,
+    { text: search, authorId },
+    { page, limit, sortType, sortBy }
+  );
 };
 
-module.exports = { findAll, count, create, findSingle, update, deleteOne, findUserMovies, findUserReviews };
+module.exports = {
+  findUserByEmail,
+  findAll,
+  count,
+  create,
+  findSingleUser: findSingle,
+  update,
+  deleteOne,
+  findUserMovies,
+  findUserReviews,
+};
