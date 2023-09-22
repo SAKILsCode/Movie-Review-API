@@ -25,7 +25,7 @@ const middleware = (app) => {
   app.use(express.json());
 
   // Serving swagger document to "/doc" route
-  app.use('/doc', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+  app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
   // Validation using swagger.yaml
   app.use(
