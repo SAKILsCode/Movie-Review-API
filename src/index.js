@@ -17,7 +17,7 @@ const main = async () => {
   try {
     await connectDB();
     server.listen(PORT, () => {
-      console.log(`Server is listening on port http://localhost/${PORT}`);
+      console.log(`Server is listening on PORT: ${PORT}`);
     });
   } catch (error) {
     console.log('Database Error');

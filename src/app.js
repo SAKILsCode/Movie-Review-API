@@ -34,11 +34,11 @@ app.use('*', (_req, _res, next) => {
 app.use((error, _req, res, _next) => {
   if (error.status === 400)
     error.message =
-      error.message.length > 30 ? 'Invalid Inputs...' : error.message;
+      error.message.length > 60 ? 'Invalid Inputs...' : error.message;
 
   if (error.status === 500)
     error.message =
-      error.message.length > 30 ? 'Internal Server Error...' : error.message;
+      error.message.length > 60 ? 'Internal Server Error...' : error.message;
 
   console.log(error);
   res.status(error.status).json({
