@@ -1,9 +1,11 @@
-const findAll = require('./findAll')
-const findAllof = require('./findAllOf')
+const findAllOf = require('./findAllOf')
+const deleteAllOf = require('./deleteAllOf')
 const countAll = require('./countAll')
+const mongooseIdValidator = require('./mongooseIdValidator')
 
 module.exports = {
-  findAll,
-  findAllof,
+  findAllOf,
+  deleteAllOf,
   countAll,
+  mongooseIdValidator
 };
