@@ -1,7 +1,7 @@
 // Import external services and dependencies
 const { query } = require('../../../../utils');
-const { findUserReviews: userReviews, count } = require('../../../../lib/user');
-const { reviewCount } = require('../../../../lib/review');
+const { findUserReviews: userReviews } = require('../../../../lib/user');
+const { count: reviewCount } = require('../../../../lib/review');
 const defaults = require('../../../../config/defaults');
 
 // Find all reviews of a users Controller
@@ -42,7 +42,7 @@ const findUserReviews = async (req, res, next) => {
     });
 
     // pagination
-    const totalItems = await reviewCount(search);
+    const totalItems = await reviewCount(search, authorId);
     const pagination = query.getPagination({ totalItems, limit, page });
 
     // HATEOAS Links
