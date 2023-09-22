@@ -1,14 +1,23 @@
 // Import Profile Service
-const profileService = require('../../../../lib/profile');
+const {
+  updateProfile: updateProfileService,
+} = require('../../../../lib/profile');
+const { matchLoggedInUser } = require('../../../../utils');
+const { authenticationError } = require('../../../../utils/error');
 
 // Update profile controller
 const updateProfile = async (req, res, next) => {
-  const id = req.params.id;
+  // Request data
   const username = req.body.username;
   const email = req.body.email;
   const password = req.body.password;
 
+  // Logged in user data
+  const id = req.user.id;
+
   try {
+    if (!id) throw authenticationError()
+
     // Updating by updateProfile service
     const {
       id: userId,
@@ -18,7 +27,7 @@ const updateProfile = async (req, res, next) => {
       totalRated,
       createdAt,
       updatedAt,
-    } = await profileService.updateProfile(id, {
+    } = await updateProfileService(id, {
       username,
       email,
       password,
@@ -38,8 +47,8 @@ const updateProfile = async (req, res, next) => {
       },
       links: {
         self: req.path,
-        user_movies: `/users/${id}/movies`,
-        user_reviews: `/users/${id}/reviews`,
+        user_movies: `${req.path.replace(/\/profile\//, '/users/')}/movies`,
+        user_reviews: `${req.path.replace(/\/profile\//, '/users/')}/reviews`,
       },
     };
 

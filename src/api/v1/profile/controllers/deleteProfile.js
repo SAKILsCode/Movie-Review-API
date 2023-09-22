@@ -1,20 +1,23 @@
 // Import Profile Service
-const profileService = require('../../../../lib/profile');
+const { deleteProfile: deleteUserProfile } = require('../../../../lib/profile');
+const { authenticationError } = require('../../../../utils/error');
 
 // Delete profile controller
 const deleteProfile = async (req, res, next) => {
-  const id = req.params.id;
+  // Logged in user data
+  const id = req.user.id;
 
   try {
-    // Deleting by deleteProfile service
-    await profileService.deleteProfile(id);
+    if (!id) throw authenticationError()
+
+    // Deleting service
+    await deleteUserProfile(id);
 
     // send response
     res.status(204).end();
   } catch (error) {
     next(error);
   }
-}
+};
 
-module.exports = deleteProfile
-
+module.exports = deleteProfile;
