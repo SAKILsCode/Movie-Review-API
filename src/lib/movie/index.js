@@ -1,18 +1,32 @@
 /**
  * Title: Movie Service
- * Description: This file contains all the business logics service functions need to implement all the actions on Movie entity.
+ * Description: This file contains all the business logics and service functions need to implement all the actions on Movie resource.
+ */
+
+/**
+ * TODO: fix issue of circular dependency while reusing services from other file
+ * Possible fix: separated service file.
  */
 
 // Dependencies and other imports
-const { default: mongoose } = require('mongoose');
 const defaults = require('../../config/defaults');
 const { Movie, User } = require('../../model');
-const { badRequest, notFound } = require('../../utils/error');
-const { findAll: findAllUtil, countAll } = require('../utils');
+const {
+  badRequest,
+  notFound,
+  authorizationError,
+} = require('../../utils/error');
+const {
+  countAll,
+  findAllOf,
+  mongooseIdValidator,
+  deleteAllOf,
+} = require('../utils');
+const { deleteAllReviews } = require('../review');
 
 /**
  * Find all movies
- * @param {Object} param0
+ * @param {Object} query
  * @returns {Array}
  */
 const findAll = ({
@@ -22,21 +36,22 @@ const findAll = ({
   sortBy = defaults.sortBy,
   search = defaults.search,
 }) => {
-  return findAllUtil(Movie, { page, limit, sortType, sortBy, search });
+  return findAllOf(Movie, { title: search }, { page, limit, sortType, sortBy });
 };
 
 /**
  * count the number of filtered movies
- * @param {Object} param0
+ * @param {String} search
+ * @param {String} authorId
  * @returns {Promise}
  */
 const count = (search = defaults.search, authorId = '') => {
-  return countAll(Movie, search, authorId);
+  return countAll(Movie, { title: search, authorId });
 };
 
 /**
- * Create a new movie
- * @param {Object} param0
+ * Create a new movie (PRIVATE)
+ * @param {Object} requestData
  * @returns {object}
  */
 const create = async ({
@@ -48,17 +63,14 @@ const create = async ({
   genre,
   description,
 }) => {
-  // TODO: authorId must be get and check using locally stored token where user infos are encoded
-  // TODO: authorId from params must be removed later
+  if (!title) throw badRequest('Invalid required field...');
+  if (!authorId) throw badRequest('Author Id is required...');
 
-  console.log('title: ', title, ' Author: ', authorId);
-  if (!title || !authorId) throw badRequest('Invalid required field...');
-
-  if (!mongoose.Types.ObjectId.isValid(authorId))
+  if (!mongooseIdValidator(authorId))
     throw badRequest('Invalid Author Id type.');
 
-  const user = await User.findById(authorId.trim());
-  if (!user) throw badRequest('Invalid Author.');
+  // Already validated in the service
+  // await findSingleUser(authorId);
 
   const movie = new Movie({
     authorId,
@@ -83,8 +95,7 @@ const create = async ({
  * @returns {Object}
  */
 const findSingle = async (id) => {
-  if (!mongoose.Types.ObjectId.isValid(id))
-    throw badRequest('Invalid Movie Id.');
+  if (!mongooseIdValidator(id)) throw badRequest('Invalid Movie Id.');
 
   const movie = await Movie.findById(id);
   if (!movie) throw notFound('Movie Not Found.');
@@ -93,23 +104,31 @@ const findSingle = async (id) => {
 };
 
 /**
- * Update a Movie with given data
+ * Update a Movie (PRIVATE)
  * @param {String} id
- * @param {Object} param1
+ * @param {String} authorId
+ * @param {Object} requestData
  * @returns {Object} updated data
  */
 const update = async (
   id,
+  authorId,
   { title, poster, releaseDate, duration, genre, description }
 ) => {
   // Checking possible errors
   if (!title || !id) throw badRequest('Invalid required field...');
-  if (!mongoose.Types.ObjectId.isValid(id)) throw badRequest('Invalid Id type.');
+  if (!authorId) throw badRequest('Author id is required...');
+
+  if (!mongooseIdValidator(id)) throw badRequest('Invalid movie id type.');
+  if (!mongooseIdValidator(authorId))
+    throw badRequest('Invalid authorId type.');
 
   const movie = await Movie.findById(id);
   if (!movie) throw notFound('Movie Not Found.');
 
-  // TODO: check if authorId matches with the logged in user from locally stored token, if not throw badRequest error
+  // const user = await findSingleUser(authorId);
+  if (movie.authorId !== user.id)
+    throw authorizationError("Movie doesn't belongs to the user");
 
   // Change properties data with given data
   movie.title = title || movie.title;
@@ -128,16 +147,54 @@ const update = async (
 };
 
 /**
- * Delete a movie and returns it
- * @param {String} id 
+ * Delete a movie and returns it (PRIVATE)
+ * @param {String} id
+ * @param {String} userId
  * @returns {object}
  */
-const deleteOne = async (id) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) throw badRequest('Invalid Id Type.');
+const deleteOne = async (id, userId) => {
+  if (!mongooseIdValidator(id)) throw badRequest('Invalid Id Type.');
+  if (!mongooseIdValidator(userId)) throw badRequest('Invalid userId Type.');
 
-  const movie = await Movie.findByIdAndDelete(id);
-  if(!movie) throw notFound('Movie Not Found.')
-  return movie
+  const movie = await Movie.findById(id);
+  if (!movie) throw notFound('Movie Not Found.');
+
+  const user = await User.findById(userId);
+  if (!user) throw notFound('User not found.');
+
+  // delete all reviews
+  await deleteAllReviews({ authorId: userId, movieId: movie.id });
+
+  // admin can delete any valid Movie
+  if (user.role === 'admin') return Movie.findByIdAndDelete(id);
+
+  if (movie.authorId !== user.id)
+    throw authorizationError("Movie doesn't belongs to the user");
+
+  return Movie.findByIdAndDelete(id);
 };
 
-module.exports = { findAll, count, create, findSingle, update, deleteOne };
+/**
+ * Delete all movies (PRIVATE)
+ * @param {String} userId
+ */
+const deleteAll = async (userId) => {
+  if (!mongooseIdValidator(userId)) throw badRequest('Invalid userId Type.');
+
+  const user = await User.findById(userId);
+  if (!user) throw notFound('User not found.');
+
+  await deleteAllOf(Movie, {
+    authorId: userId,
+  });
+};
+
+module.exports = {
+  findAll,
+  count,
+  create,
+  findSingleMovie: findSingle,
+  update,
+  deleteOne,
+  deleteAllMovies: deleteAll,
+};
