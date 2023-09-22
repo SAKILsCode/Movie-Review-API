@@ -2,7 +2,6 @@
 const { query } = require('../../../../utils');
 const {findAll, count} = require('../../../../lib/movie');
 const defaultValues = require('../../../../config/defaults');
-const { getPagination, allItemsHATEOAS } = require('../../../../utils/query');
 
 
 // Find all movies Controller

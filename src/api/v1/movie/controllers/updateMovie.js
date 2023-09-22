@@ -1,5 +1,6 @@
 // Import external services and dependencies
 const { update } = require('../../../../lib/movie');
+const { authenticationError } = require('../../../../utils/error');
 
 // Update movie Controller
 const updateMovie = async (req, res, next) => {
@@ -13,8 +14,13 @@ const updateMovie = async (req, res, next) => {
   const genre = req.body.genre;
   const description = req.body.description;
 
+  // Logged in user data
+  const author = req.user.id;
+
   // Using update movie service
   try {
+    if (!author) throw authenticationError()
+
     const {
       id: movieId,
       authorId,
@@ -27,7 +33,7 @@ const updateMovie = async (req, res, next) => {
       description: movieDescription,
       createdAt,
       updatedAt,
-    } = await update(id, {
+    } = await update(id, author, {
       title,
       poster,
       releaseDate,
@@ -53,7 +59,7 @@ const updateMovie = async (req, res, next) => {
       },
       links: {
         self: req.path,
-        movie: `/movies/${id}`,
+        movies: `/movies/${id}`,
       },
     };
 

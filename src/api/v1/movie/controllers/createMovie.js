@@ -1,5 +1,6 @@
 // Import external services and dependencies
 const { create } = require('../../../../lib/movie');
+const { authenticationError } = require('../../../../utils/error');
 
 // Create movie Controller
 const createMovie = async (req, res, next) => {
@@ -11,11 +12,13 @@ const createMovie = async (req, res, next) => {
   const genre = req.body.genre;
   const description = req.body.description;
 
-  // TODO: authorId must be removed later while changing service function
-  const author = req.body.authorId;
+  // Logged in user data
+  const author = req.user.id;
 
   // Using Create movie service
   try {
+    if (!author) throw authenticationError();
+    
     const {
       id,
       authorId,
@@ -55,7 +58,7 @@ const createMovie = async (req, res, next) => {
       },
       links: {
         self: req.path,
-        movie: `/movies/${id}`,
+        movie: `${req.path}/${id}`,
       },
     };
 
