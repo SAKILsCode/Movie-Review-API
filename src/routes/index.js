@@ -10,27 +10,30 @@ const {controllers: movieController} = require('../api/v1/movie')
 const {controllers: reviewController} = require('../api/v1/review')
 const {controllers: profileController} = require('../api/v1/profile')
 const {controllers: authController} = require('../api/v1/auth')
+const authenticate = require('../middleware/authenticate')
+const authorize = require('../middleware/authorize')
+const { roles } = require('../config/userPermissions')
 
 // Auth routes
-router.get('/api/v1/auth/signup', authController.register)
-router.get('/api/v1/auth/login', authController.login)
+router.post('/api/v1/auth/signup', authController.register)
+router.post('/api/v1/auth/login', authController.login)
 
 // Profile route
 router
   .route('/api/v1/profile')
-  .patch(profileController.updateProfile)
-  .delete(profileController.deleteProfile)
+  .patch(authenticate, authorize([roles.admin, roles.user]), profileController.updateProfile)
+  .delete(authenticate, authorize([roles.admin, roles.user]), profileController.deleteProfile)
 
 // User routes
 router
   .route('/api/v1/users')
   .get(userController.findAllUsers)
-  .post(userController.createUser)
+  .post(authenticate, authorize([roles.admin]), userController.createUser)
 router
   .route('/api/v1/users/:id')
   .get(userController.findSingleUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser)
+  .patch(authenticate, authorize([roles.admin]), userController.updateUser)
+  .delete(authenticate, authorize([roles.admin]), userController.deleteUser)
 
 // User Movies
 router.get('/api/v1/users/:id/movies', userController.findUserMovies)
@@ -42,22 +45,22 @@ router.get('/api/v1/users/:id/reviews', userController.findUserReviews)
 router
   .route('/api/v1/movies')
   .get(movieController.findAllMovies)
-  .post(movieController.createMovie)
+  .post(authenticate, authorize([roles.admin, roles.user]), movieController.createMovie)
 router
   .route('/api/v1/movies/:id')
   .get(movieController.findSingleMovie)
-  .patch(movieController.updateMovie)
-  .delete(movieController.deleteMovie)
+  .patch(authenticate, authorize([roles.admin, roles.user]), movieController.updateMovie)
+  .delete(authenticate, authorize([roles.admin, roles.user]), movieController.deleteMovie)
 
 // Review routes
 router
   .route('/api/v1/movies/:movieId/reviews')
   .get(reviewController.findAllReviews)
-  .post(reviewController.createReview)
+  .post(authenticate, authorize([roles.admin, roles.user]), reviewController.createReview)
 router
   .route('/api/v1/movies/:movieId/reviews/:id')
   .get(reviewController.findSingleReview)
-  .patch(reviewController.updateReview)
-  .delete(reviewController.deleteReview)
+  .patch(authenticate, authorize([roles.admin, roles.user]), reviewController.updateReview)
+  .delete(authenticate, authorize([roles.admin, roles.user]), reviewController.deleteReview)
 
 module.exports = router
