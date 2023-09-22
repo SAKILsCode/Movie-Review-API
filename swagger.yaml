@@ -37,18 +37,18 @@ paths:
             schema:
               type: object
               properties:
-                name:
+                username:
                   type: string
                   example: MD Sakil Hasan
                 email:
                   type: string
                   format: email
-                  example: MD Sakil Hasan
+                  example: sakil@gmail.com
                 password:
                   type: string
                   format: password
                   example: dummypassword123
-              required: [name, email, password]
+              required: [username, email, password]
       responses:
         '201':
           description: Signup successful
@@ -129,14 +129,12 @@ paths:
           $ref: '#/components/responses/500'
 
   # Profile - Private
-  '/profile/{id}':
+  '/profile':
     patch:
       security:
         - bearerAuth: []
       description: Update Profile
       tags: [Profile]
-      parameters:
-        - $ref: '#/components/parameters/idPathParam'
       requestBody:
         content:
           application/json:
@@ -149,12 +147,11 @@ paths:
                 email:
                   type: string
                   format: email
-                  example: MD Sakil Hasan
+                  example: sakil@gmail.com
                 password:
                   type: string
                   format: password
                   example: dummypassword123
-              required: [name, email, password]
       responses:
         '200':
           description: Successfully updated
@@ -191,8 +188,6 @@ paths:
         - bearerAuth: []
       description: Delete Profile
       tags: [Profile]
-      parameters:
-        - $ref: '#/components/parameters/idPathParam'
       responses:
         '204':
           description: Successfully deleted
@@ -593,7 +588,6 @@ paths:
               allOf:
                 - $ref: '#/components/schemas/MovieReqData'
 
-
       responses:
         '200':
           description: Movie Successfully updated
@@ -699,6 +693,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/ReviewReqData'
+
       responses:
         '200':
           description: Review created Successfully
@@ -810,6 +805,7 @@ paths:
       tags: [Review]
       parameters:
         - $ref: '#/components/parameters/idPathParam'
+        - $ref: '#/components/parameters/baseIdPathParam'
       responses:
         '204':
           description: Review deleted Successfully
@@ -829,6 +825,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
 
+  # No request data contains any required field, update will be partially using patch and validation must be written in the app code
   schemas:
     AuthData:
       type: object
@@ -843,7 +840,11 @@ components:
           type: string
           format: email
           example: sakil@gmail.com
-      required: [id, username, email]
+        role:
+          type: string
+          enum: [user, admin]
+          example: sakil@gmail.com
+      required: [id, username, email, role]
     UserData:
       allOf:
         - type: object
@@ -879,7 +880,6 @@ components:
         role:
           type: string
           enum: [user, admin]
-      required: [username, email, password]
     MovieData:
       allOf:
         - type: object
@@ -917,9 +917,6 @@ components:
     MovieReqData:
       type: object
       properties:
-        authorId:
-          type: string
-          example: AuthorID_WillBeRemovedFromReqLater
         title:
           type: string
           example: The Dark Knight Rises
@@ -939,7 +936,6 @@ components:
         description:
           type: string
           example: Eight years after the Joker's reign of chaos, Batman is coerced out of exile with the assistance of the mysterious Selina Kyle in order to defend Gotham City from the vicious guerrilla terrorist Bane
-      required: [title]
     ReviewData:
       allOf:
         - type: object
@@ -950,7 +946,7 @@ components:
             movieId:
               type: string
               example: H34H2=JXXXXXXXXXXXXXXX
-            userId:
+            authorId:
               type: string
               example: H34H2J2J3=MN=X342HH2243
             rating:
@@ -959,7 +955,7 @@ components:
             text:
               type: string
               example: I am BATMAN...............
-          required: [id, movieId, userId, rating]
+          required: [id, movieId, authorId, rating]
         - $ref: '#/components/schemas/Timestamp'
     ReviewReqData:
       type: object
@@ -970,7 +966,6 @@ components:
         text:
           type: string
           example: I am BATMAN......
-      required: [rating]
     Timestamp:
       type: object
       properties:
@@ -1173,4 +1168,4 @@ components:
       required: true
       schema:
         type: string
-        example: BaseId123ABC
+        example: BaseId1234ABCD
