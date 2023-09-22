@@ -1,11 +1,9 @@
 // Import Auth Service
-const authService = require('../../../../lib/auth');
+const { register: registerService } = require('../../../../lib/auth');
 
 // Register Controller
 const register = async (req, res, next) => {
-  const username = req.body.username;
-  const email = req.body.email;
-  const password = req.body.password;
+  const { username, email, password } = req.body;
 
   try {
     // Using register service
@@ -13,7 +11,8 @@ const register = async (req, res, next) => {
       id: userId,
       username: name,
       email: userEmail,
-    } = await authService.register({ username, email, password });
+      role,
+    } = await registerService({ username, email, password });
 
     // Structured response object
     const response = {
@@ -22,10 +21,11 @@ const register = async (req, res, next) => {
         id: userId,
         username: name,
         email: userEmail,
+        role,
       },
       links: {
         self: req.path, // or req.url
-        login: '/auth/login',
+        login: req.path.replace('signup', 'login'),
       },
     };
 

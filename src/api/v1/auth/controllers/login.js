@@ -1,14 +1,19 @@
 // Import Auth Service
-const authService = require('../../../../lib/auth');
+const { login: loginService } = require('../../../../lib/auth');
 
 // Login controller
 const login = async (req, res, next) => {
-  const email = req.body.email;
-  const password = req.body.password;
+  const { email, password } = req.body;
 
   try {
     // Using Login service
-    const { accessToken, userData } = await authService.login({
+    const {
+      id,
+      username,
+      email: userEmail,
+      role,
+      accessToken,
+    } = await loginService({
       email,
       password,
     });
@@ -17,9 +22,10 @@ const login = async (req, res, next) => {
     const response = {
       message: 'Login Successful',
       data: {
-        id: userData.id,
-        username: userData.username,
-        email,
+        id,
+        username,
+        email: userEmail,
+        role,
         access_token: accessToken,
       },
       links: {
