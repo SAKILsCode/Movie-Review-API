@@ -1,31 +1,37 @@
 // Import external services and dependencies
-const reviewService = require('../../../../lib/review');
+const { create } = require('../../../../lib/review');
+const { authenticationError } = require('../../../../utils/error');
 
 // Create review Controller
 const createReview = async (req, res, next) => {
+  const movieId = req.params.movieId;
   // request data
-  const movieId = req.query.movieId;
-  const rating = req.query.rating;
-  const text = req.query.text;
+  const rating = req.body.rating;
+  const text = req.body.text;
+
+  // Logged in user information
+  const loggedInAuthorId = req.user.id;
 
   // Using Create review service
   try {
+    if (!loggedInAuthorId) throw authenticationError()
+
     const {
       id,
       movieId: reviewMovieId,
-      userId,
+      authorId: userId,
       rating: reviewRating,
       text: reviewText,
       createdAt,
       updatedAt,
-    } = await reviewService.createReview({ movieId, rating, text });
+    } = await create({ loggedInAuthorId, movieId, rating, text });
 
     // Structured Response object
     const response = {
       data: {
         id,
         movieId: reviewMovieId,
-        userId,
+        authorId: userId,
         rating: reviewRating,
         text: reviewText,
         createdAt,
@@ -33,7 +39,7 @@ const createReview = async (req, res, next) => {
       },
       links: {
         self: req.path,
-        review: `/movies/${movieId}/reviews/${id}`,
+        review: `${req.path}/${id}`,
       },
     };
 

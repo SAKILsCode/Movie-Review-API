@@ -1,30 +1,30 @@
 // Import external services and dependencies
-const reviewService = require('../../../../lib/review');
+const { findSingle } = require('../../../../lib/review');
 
 // Find review Controller
 const findSingleReview = async (req, res, next) => {
-  // query data
-  const movieId = req.query.movieId;
-  const id = req.query.id;
+  // Ids
+  const movieId = req.params.movieId;
+  const id = req.params.id;
 
   // Using findReview service
   try {
     const {
       id: reviewId,
       movieId: reviewMovieId,
-      userId,
+      authorId,
       rating: reviewRating,
       text: reviewText,
       createdAt,
       updatedAt,
-    } = await reviewService.findReview(id, movieId);
+    } = await findSingle(id, movieId);
 
     // Structured Response object
     const response = {
       data: {
         id: reviewId,
         movieId: reviewMovieId,
-        userId,
+        authorId,
         rating: reviewRating,
         text: reviewText,
         createdAt,
@@ -32,7 +32,7 @@ const findSingleReview = async (req, res, next) => {
       },
       links: {
         self: req.path,
-        review: `/movies/${movieId}/reviews/${id}`,
+        reviews: req.path.replace(/\/[^/]+$/, '') // removes id from url
       },
     };
 

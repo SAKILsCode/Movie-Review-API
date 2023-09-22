@@ -1,34 +1,39 @@
 // Import external services and dependencies
-const reviewService = require('../../../../lib/review');
+const {update} = require('../../../../lib/review');
 
 // Update Review Controller
 const updateReview = async (req, res, next) => {
-  // query data
-  const movieId = req.query.movieId;
-  const id = req.query.id;
+  // url data
+  const movieId = req.params.movieId;
+  const id = req.params.id;
 
   // Request data
   const rating = req.body.rating;
   const text = req.body.text;
 
+  // Logged in user data
+  const loggedInUserId = req.user.id
+
   // Using Update Review service
   try {
+    if (!loggedInUserId) throw authenticationError()
+
     const {
       id: reviewId,
       movieId: reviewMovieId,
-      userId,
+      authorId,
       rating: reviewRating,
       text: reviewText,
       createdAt,
       updatedAt,
-    } = await reviewService.updateReview(id, movieId, { rating, text });
+    } = await update(id, movieId, loggedInUserId, { rating, text });
 
     // Structured Response object
     const response = {
       data: {
         id: reviewId,
         movieId: reviewMovieId,
-        userId,
+        authorId,
         rating: reviewRating,
         text: reviewText,
         createdAt,
@@ -36,7 +41,7 @@ const updateReview = async (req, res, next) => {
       },
       links: {
         self: req.path,
-        review: `/movies/${movieId}/reviews/${id}`,
+        reviews: req.path.replace(/\/[^/]+$/, '') // removes id from url
       },
     };
 
