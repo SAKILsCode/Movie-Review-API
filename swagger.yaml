@@ -695,7 +695,7 @@ paths:
               $ref: '#/components/schemas/ReviewReqData'
 
       responses:
-        '200':
+        '201':
           description: Review created Successfully
           content:
             application/json:
