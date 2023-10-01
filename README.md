@@ -7,11 +7,15 @@ Non-registered users can see all movies and reviews but cannot interact with the
 
 ### Specification
 
-- [Visit API SRS](https://sakilscode.notion.site/SRS-Software-Requirement-Specification-21bde6565e474f62991b3f700e31aece?pvs=4)
+- [Visit API SRS](https://sakilscode.notion.site/SRS-Software-Requirement-Specification-21bde6565e474f62991b3f700e31aece)
 
 ### Entities & Entity Relationship Diagram
 
-- [Visit Models & ERD](https://sakilscode.notion.site/Entities-Entity-Relationship-Diagram-f116ce505652420eb339b0d762073fd4?pvs=4)
+- [Visit Models & ERD](https://sakilscode.notion.site/Entities-Entity-Relationship-Diagram-f116ce505652420eb339b0d762073fd4)
+
+### Developer's Notes
+
+- [Rough doc on designing API](https://sakilscode.notion.site/API-Design-Rough-Explanation-b716bf35bca6461fbc35a92da82488e5)
 
 ### A High Level presentation of the API
 
