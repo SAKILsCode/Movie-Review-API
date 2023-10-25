@@ -1,9 +1,9 @@
 // Import external services and dependencies
-const { findSingle } = require('../../../../lib/review');
+const { findSingleReview: findSingle } = require('../../../../lib/review');
 
 // Find review Controller
 const findSingleReview = async (req, res, next) => {
-  // Ids
+  // url data
   const movieId = req.params.movieId;
   const id = req.params.id;
 

@@ -5,7 +5,7 @@ const defaults = require('../../../../config/defaults');
 
 // Find all reviews Controller
 const findAllReviews = async (req, res, next) => {
-  // query data
+  // url data
   const movieId = req.params.movieId
 
   const page = req.query.page || defaults.page;
