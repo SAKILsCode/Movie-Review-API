@@ -3,8 +3,9 @@ const { update } = require('../../../../lib/user');
 
 // Update user Controller
 const updateUser = async (req, res, next) => {
-  // query data
+  // url data
   const id = req.params.id;
+  
   // Request data
   const username = req.body.username;
   const email = req.body.email;

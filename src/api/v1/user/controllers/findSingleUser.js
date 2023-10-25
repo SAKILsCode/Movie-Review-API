@@ -1,9 +1,9 @@
 // Import external services and dependencies
-const {findSingle} = require('../../../../lib/user');
+const { findSingleUser: findSingle } = require('../../../../lib/user');
 
 // Find user Controller
 const findSingleUser = async (req, res, next) => {
-  // Req data
+  // url data
   const id = req.params.id;
 
   // Using findUser service
