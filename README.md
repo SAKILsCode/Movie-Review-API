@@ -26,6 +26,13 @@ Non-registered users can see all movies and reviews but cannot interact with the
 ```bash
 # Install All Dependencies
 yarn
+
+# Start Docker-compose Services if needed
+docker compose up -d
+
+# To stop Docker-compose Services
+docker compose stop
+
 # Run Application Locally
 yarn run dev
 ```
