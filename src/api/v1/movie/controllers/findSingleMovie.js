@@ -1,9 +1,9 @@
 // Import external services and dependencies
-const {findSingle} = require('../../../../lib/movie');
+const { findSingleMovie: findSingle } = require('../../../../lib/movie');
 
 // Find movie Controller
 const findSingleMovie = async (req, res, next) => {
-  // query data
+  // url data
   const id = req.params.id;
 
   // Using findMovie service

@@ -4,7 +4,7 @@ const { authenticationError } = require('../../../../utils/error');
 
 // Update movie Controller
 const updateMovie = async (req, res, next) => {
-  // query data
+  // url data
   const id = req.params.id;
   // Request data
   const title = req.body.title;
