@@ -125,8 +125,10 @@ const update = async (
 
   const movie = await Movie.findById(id);
   if (!movie) throw notFound('Movie Not Found.');
+  
+  const user = await User.findById(authorId);
+  if (!user) throw notFound('Author Not Found.');
 
-  // const user = await findSingleUser(authorId);
   if (movie.authorId !== user.id)
     throw authorizationError("Movie doesn't belongs to the user");
 
